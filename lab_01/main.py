@@ -10,14 +10,12 @@ class UI(QtWidgets.QMainWindow):
 
         uic.loadUi("main.ui", self)
 
-        self.pointsFirst = list()  # точки первого множества
-        self.pointsSecond = list() # точки второго множества
         self.pointsAll = list()    # информация о всех точках
-        self.actions = list()
+        self.actions = list()      # информация о всех действиях
+        self.maxValue = 0
 
-        self.canvas = Canvas(self.centralwidget, self.pointsFirst, 
-                             self.pointsSecond, self.addRow, 
-                             self.pointsAll, self.actions)
+        self.canvas = Canvas(self.centralwidget, self.addRow, 
+                             self.pointsAll, self.actions, self.maxValue)
         self.gridLayout.addWidget(self.canvas, 4, 0, 3, 4)
 
         self.addButton.clicked.connect(self.addCommand)
@@ -46,27 +44,21 @@ class UI(QtWidgets.QMainWindow):
             return
         else:
             # TODO: доделать change и починить оставшиеся
-            if self.actions[-1][2] == "add":
 
-                if self.actions[-1][1] == 1:
-                    self.pointsFirst.pop(-1)
-                else:
-                    self.pointsSecond.pop(-1)
+            print(self.actions[-1])
+
+            if self.actions[-1][-1] == "add":
 
                 self.pointsAll.pop(-1)
                 self.delRow(self.tableWidget.rowCount())
                 
-            elif self.actions[-1][2] == "del":
-                
-                if self.actions[-1][1] == 1:
-                    self.pointsFirst.append(self.actions[-1][0][0])
-                else:
-                    self.pointsSecond.append(self.actions[-1][0][0])
-                
-                self.pointsAll.append(self.actions[-1][0])
-                self.addRow(self.actions[-1][0][0].x(),
-                            self.actions[-1][0][0].y(),
-                            self.tableWidget.rowCount())
+            elif self.actions[-1][-1] == "del":
+
+                self.pointsAll.insert(self.actions[-1][2] - 1,
+                                       self.actions[-1][:2])
+                self.addRow(self.actions[-1][0].x(), 
+                            self.actions[-1][0].y(),
+                            self.actions[-1][1], self.actions[-1][2] - 1)
             else: 
                 # change
                 pass
@@ -113,19 +105,19 @@ class UI(QtWidgets.QMainWindow):
             msg.show()
 
             return
-        
-        oldPoint = self.pointsAll[pointNum - 1]
+        # TODO
+        # oldPoint = self.pointsAll[pointNum - 1]
 
-        if oldPoint[1] == setNum:
-            pass
-            # newPoint = QtCore.QPoint(xValue, yValue)
-            # self.actions.append([oldPoint[0], newPoint, setNum, "change"])
+        # if oldPoint[1] == setNum:
+        #     pass
+        #     # newPoint = QtCore.QPoint(xValue, yValue)
+        #     # self.actions.append([oldPoint[0], newPoint, setNum, "change"])
 
 
-            # множество не меняем
-        else:
-            # множество не меняем
-            pass
+        #     # множество не меняем
+        # else:
+        #     # множество не меняем
+        #     pass
         
     def addCommand(self):
 
@@ -174,11 +166,6 @@ class UI(QtWidgets.QMainWindow):
             return
 
         point = QtCore.QPoint(xValue, yValue)
-
-        if setNum == 1:
-            self.pointsFirst.append(point)
-        else:
-            self.pointsSecond.append(point)
         
         self.actions.append([point, setNum, 'add'])
         self.pointsAll.append([point, setNum])
@@ -222,12 +209,7 @@ class UI(QtWidgets.QMainWindow):
             point = self.pointsAll.pop(pointNum - 1)
             setNum = self.tableWidget.item(pointNum - 1, 1).text()
 
-            if int(setNum) == 1:
-                self.pointsFirst.remove(point[0])
-            else:
-                self.pointsSecond.remove(point[0])
-                
-            self.actions.append([point, setNum, "del"])
+            self.actions.append(point + [pointNum, "del"])
             self.delRow(pointNum)
             self.canvas.update()
 
@@ -246,17 +228,23 @@ class UI(QtWidgets.QMainWindow):
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setHorizontalHeaderLabels(["Координаты", "Множество"])
 
-        self.tableWidget.setColumnWidth(0, 240)
-        self.tableWidget.setColumnWidth(1, 140)
+        self.tableWidget.setColumnWidth(0, 300)
+        self.tableWidget.setColumnWidth(1, 260)
 
-    def addRow(self, xValue, yValue, setNum):
+    def addRow(self, xValue, yValue, setNum, row = 0):
 
-        curRow = self.tableWidget.rowCount()
+        if row == 0:
+            curRow = self.tableWidget.rowCount()
+        else:
+            curRow = row
+
         self.tableWidget.insertRow(curRow)
 
         self.tableWidget.setItem(curRow, 0, QtWidgets.QTableWidgetItem("{:.1f}, {:.1f}".format(xValue, yValue)))
         self.tableWidget.setItem(curRow, 1, QtWidgets.QTableWidgetItem(str(setNum)))
-    
+
+        self.maxValue = self.canvas.maxValue
+        
     def delRow(self, pointNum):
 
         self.tableWidget.removeRow(pointNum - 1)
@@ -302,7 +290,7 @@ class MessageBox(QtWidgets.QMessageBox):
 
 class Canvas(QtWidgets.QWidget):
     
-    def __init__(self, parent, pointsFirst, pointsSecond, addRow, pointsAll, actions):
+    def __init__(self, parent, addRow, pointsAll, actions, maxValue):
         super().__init__(parent)
 
         self.setMouseTracking(True)
@@ -317,11 +305,9 @@ class Canvas(QtWidgets.QWidget):
         self.resPointsFirst = list()  
         self.resPointsSecond = list() 
 
-        self.pointsFirst = pointsFirst   # точки первого множества
-        self.pointsSecond = pointsSecond # точки второго множества
-
         self.pointsAll = pointsAll    # информация о всех точках
         self.actions = actions
+        self.maxValue = maxValue
 
     def paintEvent(self, event):
 
@@ -330,14 +316,15 @@ class Canvas(QtWidgets.QWidget):
         self.painter.fillRect(0, 0, self.width(), self.height(), Qt.white)
 
         pen = QtGui.QPen(Qt.black, 1)
+
         self.painter.setPen(pen)
         self.painter.drawLine(QtCore.QPoint(self.width()//2, 0), QtCore.QPoint(self.width()//2, self.height()))
         self.painter.drawLine(QtCore.QPoint(0, self.height()//2), QtCore.QPoint(self.width(), self.height()//2))
         
         self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, self.height() // 2 - 5), "(0.0, 0.0)")
-        self.painter.drawText(QtCore.QPoint(self.width() - 85, self.height() // 2 - 5), "(100.0, 0.0)")
-        self.painter.drawText(QtCore.QPoint(0, self.height() // 2 - 5), "(-100.0, 0.0)")
-        self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, 20), "(0.0, 100.0)")
+        self.painter.drawText(QtCore.QPoint(self.width() - 85, self.height() // 2 - 5), "({}, 0.0)".format(self.width()))
+        self.painter.drawText(QtCore.QPoint(0, self.height() // 2 - 5), "(-{}, 0.0)".format(self.width()))
+        self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, 20), "(0.0, 100.0)".format({self.height()}))
         self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, self.height()), "(0.0, -100.0)")
         
         i = 1
@@ -348,10 +335,34 @@ class Canvas(QtWidgets.QWidget):
                 self.painter.setPen(self.penSecond)
 
             self.painter.drawPoint(point[0])
-            self.painter.drawText(point[0], "{}.({}, {})".format(i, point[0].x(), point[0].y()))
+            self.painter.drawText(point[0], " {}.({}, {})".format(i, point[0].x(), point[0].y()))
+            
+            # self.transferCoords(point[0])
+            self.takeScale(point[0].x(), point[0].y())
             i += 1
 
         self.painter.end()
+
+    def transferCoords(self, point):
+        x = point.x() - self.width() // 2
+        y = self.height() // 2 - point.y()
+
+    def takeScale(self, x, y):
+
+        x = (self.width() * x) // self.maxValue
+        y = (self.height() * y) // self.maxValue
+
+        if  x < 10:
+            x += 20
+        elif x > self.width() - 10:
+            x -= 20
+
+        if  y < 10:
+            y += 20
+        elif y > self.height() - 10:
+            y -= 20
+
+        print(self.maxValue, x, y)
 
     def mousePressEvent(self, event):
         setNum = 0
@@ -360,11 +371,11 @@ class Canvas(QtWidgets.QWidget):
             point = event.pos()
 
             if event.button() == QtCore.Qt.LeftButton:
-                self.pointsFirst.append(point)
                 setNum = 1
             else:
-                self.pointsSecond.append(point)
                 setNum = 2
+
+            self.maxValue = max(max(point.x(), point.y()) // 2, self.maxValue)
 
             self.addRow(point.x(), point.y(), setNum) 
             self.actions.append([point, setNum, "add"])
@@ -379,6 +390,7 @@ class Canvas(QtWidgets.QWidget):
         self.update()
 
 if __name__ == "__main__":
+
     app = QtWidgets.QApplication(sys.argv)
     window = UI()
     app.exec_()
