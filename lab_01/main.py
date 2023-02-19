@@ -2,6 +2,9 @@ from PyQt5 import QtWidgets, QtCore, QtGui, uic
 from PyQt5.QtCore import Qt
 import sys
 
+import itertools as it
+import calcAlg
+
 class UI(QtWidgets.QMainWindow):
 
     def __init__(self):
@@ -21,6 +24,7 @@ class UI(QtWidgets.QMainWindow):
         self.delButton.clicked.connect(self.delCommand)
         self.cancelButton.clicked.connect(self.cancelCommand)
         self.changeButton.clicked.connect(self.changeCommand)
+        self.solveButton.clicked.connect(self.solveCommand)
 
         self.exitAction.triggered.connect(self.exitProgram)
         self.progInfo.triggered.connect(self.printProgInfo)
@@ -29,6 +33,15 @@ class UI(QtWidgets.QMainWindow):
         self.styleTable()
 
         self.show()
+
+    def solveCommand(self):
+
+        firstPoints = [point for point in self.pointsAll if point[-1] == 1]
+        secondPoints = [point for point in self.pointsAll if point[-1] == 2]
+
+        for point in it.combinations(firstPoints, 3):
+            print(point)
+
 
     def cancelCommand(self):
     
@@ -40,8 +53,6 @@ class UI(QtWidgets.QMainWindow):
 
             return
         else:
-            pass
-            # TODO: доделать change и починить оставшиеся
             
             if self.actions[-1][-1] == "add":
 
