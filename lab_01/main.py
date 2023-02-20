@@ -15,9 +15,10 @@ class UI(QtWidgets.QMainWindow):
 
         self.pointsAll = list()    # информация о всех точках
         self.actions = list()      # информация о всех действиях
+        self.solution = list()     # решение
 
         self.canvas = Canvas(self.centralwidget, self.addRow, 
-                             self.pointsAll, self.actions)
+                             self.pointsAll, self.actions. self.solution)
         self.gridLayout.addWidget(self.canvas, 4, 0, 3, 4)
 
         self.addButton.clicked.connect(self.addCommand)
@@ -39,9 +40,22 @@ class UI(QtWidgets.QMainWindow):
         firstPoints = [point for point in self.pointsAll if point[-1] == 1]
         secondPoints = [point for point in self.pointsAll if point[-1] == 2]
 
-        for point in it.combinations(firstPoints, 3):
-            print(point)
+        circlesFirst = list()
+        circlesSecond = list()
 
+        for points in it.combinations(firstPoints, 3):
+            value = calcAlg.oneLine(points[0], points[1], points[2])
+
+            if value:
+                print("На одной")
+            else:
+                centerPoint = calcAlg.circleCenter(points[0], points[1], points[2])
+                
+                radius = calcAlg.lenBetwPoints(points[0], centerPoint)
+
+                print("Не на одной")
+            
+            self.canvas.update()
 
     def cancelCommand(self):
     
@@ -198,11 +212,11 @@ class UI(QtWidgets.QMainWindow):
         self.pointsAll.append([xValue, yValue, setNum])
         self.addRow(xValue, yValue, setNum)
 
-        maxValue = max(xValue, yValue, self.canvas.maxValue)
+        newMaxValue = max(abs(xValue), abs(yValue), self.canvas.maxValue)
+        if newMaxValue != self.canvas.maxValue:
+            self.canvas.maxValue = self.canvas.frame * newMaxValue
 
-        self.canvas.maxValue = maxValue + self.canvas.frame
-
-        xValue, yValue = self.canvas.toCanvas([xValue, yValue])
+        xValue, yValue = self.canvas.toCanvas([xValue, yValue])        
         
         self.canvas.update()
 
@@ -320,7 +334,7 @@ class MessageBox(QtWidgets.QMessageBox):
 
 class Canvas(QtWidgets.QWidget):
     
-    def __init__(self, parent, addRow, pointsAll, actions):
+    def __init__(self, parent, addRow, pointsAll, actions, solution):
         super().__init__(parent)
 
         self.setMouseTracking(True)
@@ -338,9 +352,11 @@ class Canvas(QtWidgets.QWidget):
         self.pointsAll = pointsAll    # информация о всех точках
         self.actions = actions
 
-        self.maxValue = 100.0
-        self.scale = 1
-        self.frame = 30
+        self.maxValue = 10.0
+        self.scale = -1
+        self.frame = 1.05
+
+        self.solution = solution
 
     def toCanvas(self, point: list): # из фактических в канвас
         
@@ -392,12 +408,19 @@ class Canvas(QtWidgets.QWidget):
             
             i += 1
 
+        if len(self.solution):
+            pass
+
+            #TODO решение
+
+            # for i in range(len(self.solution)):
+            #     self.painter.drawEllipse()
+
         self.painter.end()
 
     def mousePressEvent(self, event):
 
         setNum = 0
-        self.scale = 2 * self.maxValue / min(self.width(), self.height())
 
         if event.type() == QtCore.QEvent.MouseButtonPress:
 
@@ -408,11 +431,14 @@ class Canvas(QtWidgets.QWidget):
             else:
                 setNum = 2
 
-            if (abs(point.x() - self.width()) <= self.frame) or \
-            (abs(point.y() - self.height()) <= self.frame):
-                self.maxValue += self.frame
+            xValue, yValue = self.fromCanvas([point.x(), point.y()])
 
-            xValue, yValue = self.fromCanvas([point.x(), point.y()])   
+            newMaxValue = max(abs(xValue), abs(yValue), self.maxValue)
+
+            if self.maxValue != newMaxValue:
+                self.maxValue = newMaxValue * self.frame
+
+            self.scale = 2 * self.maxValue / min(self.width(), self.height())
 
             self.addRow(xValue, yValue, setNum) 
             self.actions.append([xValue, yValue, setNum, "add"])

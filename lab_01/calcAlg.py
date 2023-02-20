@@ -5,9 +5,9 @@ def oneLine(point_1:list, point_2:list, point_3:list):
     
     if abs((point_3[0] - point_1[0]) * (point_2[1] - point_1[1]) - \
     (point_2[0] - point_1[0]) * (point_3[1] - point_1[1])) <= EPS:
-        return False
+        return True # лежат на одной прямой
     
-    return True
+    return False # не лежат на одной прямой
 
 def circleCenter(point_1:list, point_2:list, point_3:list):
 
@@ -29,5 +29,10 @@ def circleCenter(point_1:list, point_2:list, point_3:list):
     xValue = np.linalg.det(xValue) / fact
     yValue = (-1) * np.linalg.det(yValue) / fact
 
+    return [xValue, yValue]
+
 def lenBetwPoints(point_1:list, point_2:list):
     return (point_1[0] - point_2[0]) ** 2 + (point_1[1] - point_2[1]) ** 2
+
+def newPointCoord(radius_1, point_1:list, radius_2, point_2:list):
+    pass
