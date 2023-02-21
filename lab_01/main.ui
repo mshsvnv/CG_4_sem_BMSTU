@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1308</width>
-    <height>1120</height>
+    <width>1328</width>
+    <height>1248</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,45 +15,28 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="3">
-     <widget class="QLineEdit" name="setNumLineEdit"/>
-    </item>
-    <item row="0" column="2">
-     <widget class="QLabel" name="pointNumLabel">
+    <item row="8" column="0" rowspan="11" colspan="4">
+     <widget class="QLabel" name="solveLabel">
       <property name="font">
        <font>
         <pointsize>15</pointsize>
        </font>
       </property>
       <property name="text">
-       <string>№ точки:</string>
+       <string>Ответ:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
       </property>
      </widget>
     </item>
-    <item row="7" column="0" colspan="2">
-     <widget class="QPushButton" name="restartButton">
-      <property name="text">
-       <string>Заново</string>
-      </property>
-      <property name="shortcut">
-       <string>Ctrl+D</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="yAddLabel">
-      <property name="font">
-       <font>
-        <pointsize>15</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Y:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="2" colspan="2">
+    <item row="12" column="4">
      <widget class="QPushButton" name="solveButton">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color = rgb(143, 100, 164)</string>
       </property>
@@ -62,6 +45,63 @@
       </property>
       <property name="shortcut">
        <string>Ctrl+S</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="4">
+     <widget class="QPushButton" name="cancelButton">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Отменить</string>
+      </property>
+      <property name="shortcut">
+       <string>Ctrl+Z</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QLabel" name="curPosLabel">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Текущая позиция: </string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="4">
+     <widget class="QPushButton" name="restartButton">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Заново</string>
+      </property>
+      <property name="shortcut">
+       <string>Ctrl+D</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="4">
+     <widget class="QLabel" name="label_1">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Первое мн-во: ПКМ</string>
       </property>
      </widget>
     </item>
@@ -77,22 +117,106 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="xLabel">
+    <item row="14" column="4" rowspan="2">
+     <widget class="QWidget" name="widget" native="true"/>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="pointNumLabel">
       <property name="font">
        <font>
         <pointsize>15</pointsize>
        </font>
       </property>
       <property name="text">
-       <string>X:</string>
+       <string>№ точки:</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="yLineEdit"/>
+    <item row="0" column="4">
+     <widget class="QLabel" name="label">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Ввод точек:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
     </item>
-    <item row="0" column="4" rowspan="8">
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="xLineEdit"/>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="yAddLabel">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Y:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0" rowspan="4" colspan="4">
+     <widget class="QWidget" name="canvasWidget" native="true"/>
+    </item>
+    <item row="3" column="0" colspan="2">
+     <widget class="QPushButton" name="delButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Удалить</string>
+      </property>
+      <property name="shortcut">
+       <string>Ctrl+X</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="4">
+     <widget class="QLabel" name="label_2">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Второе мн-во: ЛКМ</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="QPushButton" name="addButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Добавить</string>
+      </property>
+      <property name="shortcut">
+       <string>Return</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QLineEdit" name="pointNumLineEdit"/>
+    </item>
+    <item row="5" column="4">
      <widget class="QTableWidget" name="tableWidget">
       <property name="mouseTracking">
        <bool>false</bool>
@@ -110,6 +234,11 @@
     </item>
     <item row="2" column="2" colspan="2">
      <widget class="QPushButton" name="changeButton">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="text">
        <string>Изменить</string>
       </property>
@@ -118,50 +247,38 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="xLineEdit"/>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="yLineEdit"/>
     </item>
-    <item row="0" column="3">
-     <widget class="QLineEdit" name="pointNumLineEdit"/>
-    </item>
-    <item row="3" column="2" colspan="2">
-     <widget class="QPushButton" name="cancelButton">
-      <property name="text">
-       <string>Отменить</string>
+    <item row="0" column="0">
+     <widget class="QLabel" name="xLabel">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
       </property>
-      <property name="shortcut">
-       <string>Ctrl+Z</string>
+      <property name="text">
+       <string>X:</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="0" colspan="2">
-     <widget class="QPushButton" name="addButton">
-      <property name="enabled">
-       <bool>true</bool>
+    <item row="1" column="3">
+     <widget class="QLineEdit" name="setNumLineEdit"/>
+    </item>
+    <item row="3" column="3">
+     <widget class="QLabel" name="curCoordLabel">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
       </property>
       <property name="text">
-       <string>Добавить</string>
-      </property>
-      <property name="shortcut">
-       <string>Return</string>
+       <string/>
       </property>
      </widget>
-    </item>
-    <item row="3" column="0" colspan="2">
-     <widget class="QPushButton" name="delButton">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="text">
-       <string>Удалить</string>
-      </property>
-      <property name="shortcut">
-       <string>Ctrl+X</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0" rowspan="3" colspan="4">
-     <widget class="QWidget" name="canvasWidget" native="true"/>
     </item>
    </layout>
   </widget>
@@ -170,7 +287,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1308</width>
+     <width>1328</width>
      <height>25</height>
     </rect>
    </property>

@@ -1,6 +1,6 @@
-from PyQt5 import QtWidgets, QtCore, QtGui, uic
-from PyQt5.QtCore import Qt
+from PyQt5 import QtWidgets, uic
 import sys
+from canvas import Canvas
 
 import itertools as it
 import calcAlg
@@ -17,8 +17,9 @@ class UI(QtWidgets.QMainWindow):
         self.actions = list()      # информация о всех действиях
         self.solution = list()     # решение
 
-        self.canvas = Canvas(self.centralwidget, self.addRow, 
-                             self.pointsAll, self.actions. self.solution)
+        self.canvas = Canvas(self.canvasWidget, self.addRow, 
+                             self.curCoordLabel, self.pointsAll, 
+                             self.actions, self.solution)
         self.gridLayout.addWidget(self.canvas, 4, 0, 3, 4)
 
         self.addButton.clicked.connect(self.addCommand)
@@ -26,6 +27,7 @@ class UI(QtWidgets.QMainWindow):
         self.cancelButton.clicked.connect(self.cancelCommand)
         self.changeButton.clicked.connect(self.changeCommand)
         self.solveButton.clicked.connect(self.solveCommand)
+        self.restartButton.clicked.connect(self.restartCommand)
 
         self.exitAction.triggered.connect(self.exitProgram)
         self.progInfo.triggered.connect(self.printProgInfo)
@@ -35,11 +37,59 @@ class UI(QtWidgets.QMainWindow):
 
         self.show()
 
+    def restartCommand(self):
+
+        for i in range(len(self.pointsAll)):
+            self.delRow(1)
+
+        self.pointsAll = []
+        self.canvas.pointsAll = self.pointsAll
+
+        self.actions = []
+        
+        self.maxValue = 10.0
+        self.scale = 2 * self.maxValue / min(self.width(), self.height())
+
+        self.canvas.update()
+
     def solveCommand(self):
 
-        firstPoints = [point for point in self.pointsAll if point[-1] == 1]
-        secondPoints = [point for point in self.pointsAll if point[-1] == 2]
+        if len(self.pointsAll) ==  0:
+            msg = MessageBox("Ошибка",
+                             "Нет доступных точек для построения",
+                             QtWidgets.QMessageBox.Information)
 
+            x = msg.exec_()
+
+            return
+
+        firstPoints = list()
+        secondPoints = list()
+
+        for i in range(len(self.pointsAll)):
+            if self.pointsAll[i][-1] == 1:
+                firstPoints.append(self.pointsAll[i] + [i])
+            else:
+                secondPoints.append(self.pointsAll[i] + [i])
+
+        if len(firstPoints) < 3:
+            msg = MessageBox("Ошибка",
+                             "Недостаточно точек 1го множества",
+                             QtWidgets.QMessageBox.Information)
+
+            x = msg.exec_()
+
+            return
+        
+        if len(secondPoints) < 3:
+            msg = MessageBox("Ошибка",
+                             "Недостаточно точек 2го множества",
+                             QtWidgets.QMessageBox.Information)
+
+            x = msg.exec_()
+
+            return
+        
         circlesFirst = list()
         circlesSecond = list()
 
@@ -47,15 +97,85 @@ class UI(QtWidgets.QMainWindow):
             value = calcAlg.oneLine(points[0], points[1], points[2])
 
             if value:
-                print("На одной")
+                pass
+                # print("На одной")
             else:
-                centerPoint = calcAlg.circleCenter(points[0], points[1], points[2])
+                centerPoint = calcAlg.circleCenter(points[0], points[1], points[2]) # в фактических координатах
                 
-                radius = calcAlg.lenBetwPoints(points[0], centerPoint)
+                radius = calcAlg.lenBetwPoints(points[0], centerPoint) # в фактических координатах
 
-                print("Не на одной")
+                circlesFirst.append([centerPoint, radius, points[0][-1], points[1][-1], points[2][-1]])
+
+                # print("Не на одной")
+
+            if len(circlesFirst) == 0:
+                msg = MessageBox("Ошибка",
+                                "Из точек первого множества нельзя построить окружности",
+                                QtWidgets.QMessageBox.Information)
+
+                x = msg.exec_()
+
+                return
+
+        for points in it.combinations(secondPoints, 3):
+            value = calcAlg.oneLine(points[0], points[1], points[2])
+
+            if value:
+                pass
+                # print("На одной")
+            else:
+                centerPoint = calcAlg.circleCenter(points[0], points[1], points[2]) # в фактических координатах
+                
+                radius = calcAlg.lenBetwPoints(points[0], centerPoint) # в фактических координатах
+
+                circlesSecond.append([centerPoint, radius, points[0][-1], points[1][-1], points[2][-1]])
+
+                # print("Не на одной")
+
+            if len(circlesFirst) == 0:
+                msg = MessageBox("Ошибка",
+                                "Из точек второго множества нельзя построить окружности",
+                                QtWidgets.QMessageBox.Information)
+
+                x = msg.exec_()
+
+                return
             
-            self.canvas.update()
+        maxDeltaSquare = 0 # максимальная разность площадей
+            
+        for i in range(len(circlesFirst)):
+            for j in range(len(circlesSecond)):
+
+                spaceBetwCenters = calcAlg.lenBetwPoints(circlesFirst[i][0],
+                                                         circlesSecond[j][0])
+                
+                if spaceBetwCenters > circlesFirst[i][1] + circlesSecond[j][1]: # окружности не пересекаются и не касаются
+            
+                    interPoint = calcAlg.interPointCoord(circlesFirst[i][1], 
+                                                         circlesFirst[i][0],
+                                                         circlesSecond[j][1],
+                                                         circlesSecond[j][0])
+                    
+                    p_3First, p_4First = calcAlg.circlesIntersection(circlesFirst[i], interPoint)  # координаты точек персечения окружностей
+                    p_3Second, p_4Second = calcAlg.circlesIntersection(circlesSecond[j], interPoint)
+
+                    squareFirst = calcAlg.triangleSquare(circlesFirst[i][0], 
+                                                         p_3First, 
+                                                         interPoint)
+
+                    squareSecond = calcAlg.triangleSquare(circlesSecond[j][0], 
+                                                         p_3Second, 
+                                                         interPoint)
+
+                    curDeltaSquare = abs(squareFirst - squareSecond)
+
+                    if curDeltaSquare >= maxDeltaSquare:
+                        maxDeltaSquare = abs(squareFirst - squareSecond)                     
+                        
+                        self.solution = [circlesFirst[i] + p_3First + p_4First]
+                        self.solution.append(circlesSecond[j] + p_3First + p_4First) 
+            
+        self.canvas.update()
 
     def cancelCommand(self):
     
@@ -82,7 +202,6 @@ class UI(QtWidgets.QMainWindow):
                             self.actions[-1][2], 
                             self.actions[-1][3] - 1)
             else: 
-                print(self.pointsAll)
                 self.pointsAll[self.actions[-1][2] - 1] = self.actions[-1][0]
 
                 self.delRow(self.actions[-1][2])
@@ -212,10 +331,8 @@ class UI(QtWidgets.QMainWindow):
         self.pointsAll.append([xValue, yValue, setNum])
         self.addRow(xValue, yValue, setNum)
 
-        newMaxValue = max(abs(xValue), abs(yValue), self.canvas.maxValue)
-        if newMaxValue != self.canvas.maxValue:
-            self.canvas.maxValue = self.canvas.frame * newMaxValue
-
+        self.canvas.maxValue = max(abs(xValue), abs(yValue), self.canvas.maxValue)
+        
         xValue, yValue = self.canvas.toCanvas([xValue, yValue])        
         
         self.canvas.update()
@@ -331,126 +448,6 @@ class MessageBox(QtWidgets.QMessageBox):
 
     def show(self):
         x = self.exec_()
-
-class Canvas(QtWidgets.QWidget):
-    
-    def __init__(self, parent, addRow, pointsAll, actions, solution):
-        super().__init__(parent)
-
-        self.setMouseTracking(True)
-
-        self.penFirst = QtGui.QPen(Qt.red, 8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
-        self.penSecond = QtGui.QPen(Qt.green, 8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
-
-        self.painter = QtGui.QPainter()
-
-        self.addRow = addRow
-
-        self.resPointsFirst = list()  
-        self.resPointsSecond = list() 
-
-        self.pointsAll = pointsAll    # информация о всех точках
-        self.actions = actions
-
-        self.maxValue = 10.0
-        self.scale = -1
-        self.frame = 1.05
-
-        self.solution = solution
-
-    def toCanvas(self, point: list): # из фактических в канвас
-        
-        xValue = int(self.width() // 2 + point[0] / self.scale)
-        yValue = int(self.height() // 2 - point[1] / self.scale)
-
-        return [xValue, yValue]
-    
-    def fromCanvas(self, point: list): # из канваса в фактические
-
-        xValue = (point[0] - self.width() // 2) * self.scale
-        yValue = (-point[1] + self.height() // 2) * self.scale
-
-        return [xValue, yValue]
-
-    def paintEvent(self, event):
-
-        self.painter.begin(self)
-
-        self.scale = 2 * self.maxValue / min(self.width(), self.height())
-
-        self.painter.fillRect(0, 0, self.width(), self.height(), Qt.white)
-
-        pen = QtGui.QPen(Qt.black, 1)
-
-        self.painter.setPen(pen)
-        self.painter.drawLine(QtCore.QPoint(self.width()//2, 0), QtCore.QPoint(self.width()//2, self.height()))
-        self.painter.drawLine(QtCore.QPoint(0, self.height()//2), QtCore.QPoint(self.width(), self.height()//2))
-        
-        self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, self.height() // 2 - 5), "(0.0, 0.0)")
-        self.painter.drawText(QtCore.QPoint(self.width() - 85, self.height() // 2 - 5), "({:.1f}, 0.0)".format(self.maxValue))
-        self.painter.drawText(QtCore.QPoint(0, self.height() // 2 - 5), "(-{:.1f}, 0.0)".format(self.maxValue))
-        self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, 20), "(0.0, {:.1f})".format(self.maxValue))
-        self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, self.height()), "(0.0, {:.1f})".format(self.maxValue))
-
-        i = 1
-        for point in self.pointsAll:
-            if point[2] == 1:
-                self.painter.setPen(self.penFirst)
-            else:
-                self.painter.setPen(self.penSecond)
-
-            xValue, yValue = self.toCanvas(point)
-
-            drawPoint = QtCore.QPoint(xValue, yValue)
-
-            self.painter.drawPoint(drawPoint)
-            self.painter.drawText(drawPoint, " {}.({:.1f}, {:.1f})".format(i, point[0], point[1]))
-            
-            i += 1
-
-        if len(self.solution):
-            pass
-
-            #TODO решение
-
-            # for i in range(len(self.solution)):
-            #     self.painter.drawEllipse()
-
-        self.painter.end()
-
-    def mousePressEvent(self, event):
-
-        setNum = 0
-
-        if event.type() == QtCore.QEvent.MouseButtonPress:
-
-            point = event.pos()
-
-            if event.button() == QtCore.Qt.LeftButton:
-                setNum = 1
-            else:
-                setNum = 2
-
-            xValue, yValue = self.fromCanvas([point.x(), point.y()])
-
-            newMaxValue = max(abs(xValue), abs(yValue), self.maxValue)
-
-            if self.maxValue != newMaxValue:
-                self.maxValue = newMaxValue * self.frame
-
-            self.scale = 2 * self.maxValue / min(self.width(), self.height())
-
-            self.addRow(xValue, yValue, setNum) 
-            self.actions.append([xValue, yValue, setNum, "add"])
-            self.pointsAll.append([xValue, yValue, setNum])
-            
-        self.update()
-
-    def clearCanvas(self):
-
-        self.pixmap().fill(Qt.white)
-
-        self.update()
 
 if __name__ == "__main__":
 
