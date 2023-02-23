@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt
+import calcAlg
 
 class Canvas(QtWidgets.QWidget):
     
@@ -48,18 +49,17 @@ class Canvas(QtWidgets.QWidget):
 
         self.painter.fillRect(0, 0, self.width(), self.height(), Qt.white)
 
-        pen = QtGui.QPen(Qt.black, 1)
+        self.painter.setPen(QtGui.QPen(Qt.black, 1))
 
         axis = self.fromCanvas([self.width(), self.height()])
 
-        self.painter.setPen(pen)
         self.painter.drawLine(QtCore.QPoint(self.width()//2, 0), QtCore.QPoint(self.width()//2, self.height()))
         self.painter.drawLine(QtCore.QPoint(0, self.height()//2), QtCore.QPoint(self.width(), self.height()//2))
         
         self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, self.height() // 2 - 5), "(0.0, 0.0)")
-        self.painter.drawText(QtCore.QPoint(self.width() - 85, self.height() // 2 - 5), "({:.1f}, 0.0)".format(axis[0]))
+        self.painter.drawText(QtCore.QPoint(self.width() - 90, self.height() // 2 - 5), "({:.1f}, 0.0)".format(axis[0]))
         self.painter.drawText(QtCore.QPoint(0, self.height() // 2 - 5), "(-{:.1f}, 0.0)".format(axis[0]))
-        self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, 20), "(0.0, {:.1f})".format(axis[1]))
+        self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, 20), "(0.0, {:.1f})".format(-1 * axis[1]))
         self.painter.drawText(QtCore.QPoint(self.width() // 2 + 10, self.height()), "(0.0, {:.1f})".format(axis[1]))
 
     def paintEvent(self, event):
@@ -68,6 +68,7 @@ class Canvas(QtWidgets.QWidget):
 
         self.scale = 2 * self.maxValue / min(self.width(), self.height())
 
+        self.painter.setFont(QtGui.QFont('Ubuntu', 15))
         self.prepareCanvas()
         
         i = 1
@@ -96,7 +97,48 @@ class Canvas(QtWidgets.QWidget):
             
             i += 1
 
+        if len(self.solution) != 0:
+            self.drawSolution()
+            
         self.painter.end()
+
+    def drawSolution(self):
+
+        pointsPolygon = []
+        lastPoint = False
+        self.painter.setPen(QtGui.QPen(Qt.black, 3))
+
+        for i in range(len(self.solution) - 1):
+                
+            xValue, yValue = self.toCanvas([self.solution[i][0][0] - self.solution[i][1],
+                                                self.solution[i][0][1] + self.solution[i][1]])
+            
+            xRadius, yRadius = self.toCanvas([self.solution[i][0][0] + self.solution[i][1],
+                                                self.solution[i][0][1] + self.solution[i][1]])
+            
+            side = int(calcAlg.lenBetwPoints([xValue, yValue], [xRadius, yRadius]))
+            
+            self.painter.drawEllipse(xValue, yValue, side, side)
+
+            xFirst, yFirst = self.toCanvas([self.solution[i][5], self.solution[i][6]])
+            xSecond, ySecond = self.toCanvas([self.solution[i][7], self.solution[i][8]])
+            xCenter, yCenter = self.toCanvas([self.solution[i][0][0], self.solution[i][0][1]])
+
+            if not lastPoint:
+                pointsPolygon.append(QtCore.QPoint(xCenter, yCenter))
+                lastPoint = QtCore.QPoint(xSecond, ySecond)
+                pointsPolygon.append(QtCore.QPoint(xFirst, yFirst))
+            else:
+                pointsPolygon.append(QtCore.QPoint(xFirst, yFirst))
+                pointsPolygon.append(QtCore.QPoint(xCenter, yCenter))
+                pointsPolygon.append(QtCore.QPoint(xSecond, ySecond))
+            
+        pointsPolygon.append(lastPoint)
+        
+        self.painter.setPen(QtGui.QPen(Qt.black, 3))
+        self.painter.setBrush(QtGui.QBrush(Qt.black, Qt.VerPattern))
+
+        self.painter.drawPolygon(pointsPolygon)
 
     def mouseMoveEvent(self, event):
 

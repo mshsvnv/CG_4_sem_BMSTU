@@ -11,10 +11,12 @@ def oneLine(point_1:list, point_2:list, point_3:list):
 
 def circleCenter(point_1:list, point_2:list, point_3:list):
 
-    fact = 2 * np.array(
+    fact = np.array(
         [[point_1[0], point_1[1], 1],
         [point_2[0], point_2[1], 1],
         [point_3[0], point_3[1], 1]])
+    
+    fact = 2 * np.linalg.det(fact)
 
     xValue = np.array(
         [[point_1[0] ** 2 + point_1[1] ** 2, point_1[1], 1],
@@ -26,8 +28,8 @@ def circleCenter(point_1:list, point_2:list, point_3:list):
         [point_2[0] ** 2 + point_2[1] ** 2, point_2[0], 1],
         [point_3[0] ** 2 + point_3[1] ** 2, point_3[0], 1]])
 
-    xValue = np.linalg.det(xValue) / np.linalg.det(fact)
-    yValue = (-1) * np.linalg.det(yValue) / np.linalg.det(fact)
+    xValue = np.linalg.det(xValue) / fact
+    yValue = (-1) * np.linalg.det(yValue) / fact
 
     return [xValue, yValue]
 
@@ -45,38 +47,31 @@ def interPointCoord(radius_1, point_1:list, radius_2, point_2:list):
 
 def circlesIntersection(mainCircle, interPoint):
 
-    xCenterSide = (mainCircle[0][0] + interPoint[0]) / 2
-    yCenterSide = (mainCircle[0][1] + interPoint[1]) / 2
-
-    radiusSide = lenBetwPoints([xCenterSide, yCenterSide], interPoint)
-    d  = lenBetwPoints([xCenterSide, yCenterSide], mainCircle[0])
-
-    a = (mainCircle[1] ** 2 - radiusSide ** 2 + d ** 2) / 2 * d
-
+    centerSide = [(mainCircle[0][0] + interPoint[0]) / 2,
+                (mainCircle[0][1] + interPoint[1]) / 2]
+   
+    radiusSide = lenBetwPoints(centerSide, interPoint)
+    
+    d  = radiusSide
+    
+    a = (mainCircle[1] ** 2) / (2 * d)
+   
     h = (mainCircle[1] ** 2 - a ** 2) ** (1/2)
-
+    
     p_2 = list()
     p_3 = list()
     p_4 = list()
 
     for i in range(2):
-        p_2.append(mainCircle[0][i] + a * (interPoint[0] - mainCircle[0][i]) / d)
+        p_2.append(mainCircle[0][i] + a * (centerSide[i] - mainCircle[0][i]) / d)
 
-        p_3.append(p_2[i] + h * (interPoint[1 - i] - mainCircle[0][1 - i]) / d)
+        p_3.append(p_2[i] + h * (centerSide[1 - i] - mainCircle[0][1 - i]) / d)
 
-        p_4.append(p_2[i] - h * (interPoint[1 - i] - mainCircle[0][1 - i]) / d)
+        p_4.append(p_2[i] - h * (centerSide[1 - i] - mainCircle[0][1 - i]) / d)
 
         h *= -1
-    # p_2 = [mainCircle[0][0] + a * (interPoint[0] - mainCircle[0][0]) / d,
-    #        mainCircle[0][1] + a * (interPoint[1] - mainCircle[0][1]) / d]
-    
-    # p_3 = [p_2[0] + h * (interPoint[1] - mainCircle[0][1]) / d,
-    #        p_2[1] - h * (interPoint[0] - mainCircle[0][0]) / d]
-    
-    # p_4 = [p_2[0] - h * (interPoint[1] - mainCircle[0][1]) / d,
-    #        p_2[1] + h * (interPoint[0] - mainCircle[0][0]) / d]
-    
-    return p_3, p_4
+
+    return [p_3, p_4]
 
 def triangleSquare(point_1: list, point_2: list, point_3: list):
     

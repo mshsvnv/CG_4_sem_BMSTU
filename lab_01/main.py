@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, QtGui, uic
 import sys
 from canvas import Canvas
 
@@ -16,6 +16,7 @@ class UI(QtWidgets.QMainWindow):
         self.pointsAll = list()    # информация о всех точках
         self.actions = list()      # информация о всех действиях
         self.solution = list()     # решение
+        self.maxDeltaSquare = -1
 
         self.canvas = Canvas(self.canvasWidget, self.addRow, 
                              self.curCoordLabel, self.pointsAll, 
@@ -42,13 +43,26 @@ class UI(QtWidgets.QMainWindow):
         for i in range(len(self.pointsAll)):
             self.delRow(1)
 
+        self.maxDeltaSquare = -1
+
         self.pointsAll = []
         self.canvas.pointsAll = self.pointsAll
 
+        self.solution = []
+        self.canvas.solution = self.solution
+
         self.actions = []
+        self.canvas.actions = self.actions
         
-        self.maxValue = 10.0
-        self.scale = 2 * self.maxValue / min(self.width(), self.height())
+        self.canvas.maxValue = 10.0
+        self.canvas.scale = 2 * self.canvas.maxValue / min(self.width(), self.height())
+
+        self.solveLabel.setText("Ответ: ")
+
+        self.xLineEdit.setText("")
+        self.yLineEdit.setText("")
+        self.setNumLineEdit.setText("")
+        self.pointNumLineEdit.setText("")
 
         self.canvas.update()
 
@@ -103,7 +117,8 @@ class UI(QtWidgets.QMainWindow):
                 centerPoint = calcAlg.circleCenter(points[0], points[1], points[2]) # в фактических координатах
                 
                 radius = calcAlg.lenBetwPoints(points[0], centerPoint) # в фактических координатах
-
+                
+                # print([centerPoint, radius, points[0][-1], points[1][-1], points[2][-1]])
                 circlesFirst.append([centerPoint, radius, points[0][-1], points[1][-1], points[2][-1]])
 
                 # print("Не на одной")
@@ -128,6 +143,7 @@ class UI(QtWidgets.QMainWindow):
                 
                 radius = calcAlg.lenBetwPoints(points[0], centerPoint) # в фактических координатах
 
+                # print([centerPoint, radius, points[0][-1], points[1][-1], points[2][-1]])
                 circlesSecond.append([centerPoint, radius, points[0][-1], points[1][-1], points[2][-1]])
 
                 # print("Не на одной")
@@ -140,9 +156,7 @@ class UI(QtWidgets.QMainWindow):
                 x = msg.exec_()
 
                 return
-            
-        maxDeltaSquare = 0 # максимальная разность площадей
-            
+                
         for i in range(len(circlesFirst)):
             for j in range(len(circlesSecond)):
 
@@ -158,7 +172,7 @@ class UI(QtWidgets.QMainWindow):
                     
                     p_3First, p_4First = calcAlg.circlesIntersection(circlesFirst[i], interPoint)  # координаты точек персечения окружностей
                     p_3Second, p_4Second = calcAlg.circlesIntersection(circlesSecond[j], interPoint)
-
+                    
                     squareFirst = calcAlg.triangleSquare(circlesFirst[i][0], 
                                                          p_3First, 
                                                          interPoint)
@@ -169,12 +183,52 @@ class UI(QtWidgets.QMainWindow):
 
                     curDeltaSquare = abs(squareFirst - squareSecond)
 
-                    if curDeltaSquare >= maxDeltaSquare:
-                        maxDeltaSquare = abs(squareFirst - squareSecond)                     
+                    if curDeltaSquare >= self.maxDeltaSquare:
+                        self.actions.append([self.canvas.maxValue, self.maxDeltaSquare, "draw"])
+                        self.maxDeltaSquare = curDeltaSquare                    
                         
                         self.solution = [circlesFirst[i] + p_3First + p_4First]
-                        self.solution.append(circlesSecond[j] + p_3First + p_4First) 
-            
+                        self.solution.append(circlesSecond[j] + p_3Second + p_4Second) 
+                        self.solution.append(interPoint)
+
+                        self.canvas.solution = self.solution
+                        
+                        maxValue = []
+                        for k in range(2):
+                            maxValue += [circlesFirst[i][0][k] - circlesFirst[i][1],
+                                            circlesFirst[i][0][k] + circlesFirst[i][1],
+                                            circlesSecond[j][0][k] - circlesSecond[j][1],
+                                            circlesSecond[j][0][k] + circlesSecond[j][1]]
+
+                        maxValue = [abs(x) for x in maxValue]
+
+                        self.canvas.maxValue = max(max(maxValue), self.canvas.maxValue)
+                        
+                        text = "Ответ: \nМакисмальная разность площадей: {:.3f}".format(self.maxDeltaSquare)
+                        text += "\nТочки первого множества:\n"
+                        for k in range(3):
+                            text += "{}. ({:.1f}, {:.1f}); ".format(
+                                circlesFirst[i][k + 2] + 1, 
+                                self.pointsAll[circlesFirst[i][k + 2]][0],
+                                self.pointsAll[circlesFirst[i][k + 2]][1])
+                        
+                        text += "\n\nТочки второго множества:\n"
+                        for k in range(3):
+                            text += "{}. ({:.1f}, {:.1f}); ".format(
+                                circlesSecond[j][k + 2] + 1, 
+                                self.pointsAll[circlesSecond[j][k + 2]][0],
+                                self.pointsAll[circlesSecond[j][k + 2]][1])
+                            
+                        self.solveLabel.setText(text)
+
+        if len(self.solution) == 0:
+            msg = MessageBox("Ошибка",
+                             "Подходящих окружностей нет!", 
+                             QtWidgets.QMessageBox.Warning)
+            msg.show()
+
+            return
+        
         self.canvas.update()
 
     def cancelCommand(self):
@@ -201,7 +255,7 @@ class UI(QtWidgets.QMainWindow):
                             self.actions[-1][1],
                             self.actions[-1][2], 
                             self.actions[-1][3] - 1)
-            else: 
+            elif self.actions[-1][-1] == "change": 
                 self.pointsAll[self.actions[-1][2] - 1] = self.actions[-1][0]
 
                 self.delRow(self.actions[-1][2])
@@ -209,6 +263,11 @@ class UI(QtWidgets.QMainWindow):
                             self.actions[-1][0][1],
                             self.actions[-1][0][2],
                             self.actions[-1][2] - 1)
+            else:
+                self.canvas.maxValue = self.actions[-1][0]
+                self.maxDeltaSquare = self.actions[-1][1]
+                self.solution = []
+                self.canvas.solution = []
                 
             self.actions.pop(-1)
 
@@ -220,7 +279,6 @@ class UI(QtWidgets.QMainWindow):
         yValue = self.yLineEdit.text()
         setNum = self.setNumLineEdit.text()
         pointNum = self.pointNumLineEdit.text()
-
 
         if len(pointNum) == 0:
             msg = MessageBox("Ошибка",
@@ -272,7 +330,16 @@ class UI(QtWidgets.QMainWindow):
             self.pointsAll[pointNum - 1][1] = yValue
 
         if len(str(setNum)) != 0:
-            self.pointsAll[pointNum - 1][2] = setNum
+            if setNum == 1 or setNum == 2:
+                self.pointsAll[pointNum - 1][2] = setNum
+            else:
+                msg = MessageBox("Ошибка",
+                                    "Неверный номер множества!", 
+                                    QtWidgets.QMessageBox.Warning)
+                msg.show()
+
+                return
+
 
         self.actions.append((oldPoint, self.pointsAll[pointNum - 1], pointNum, "change"))
         
@@ -387,16 +454,18 @@ class UI(QtWidgets.QMainWindow):
 
     # функции для обработки таблицы
     def styleTable(self):
-
+        
+        self.tableWidget.setFont(QtGui.QFont('Ubuntu', 15))
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setHorizontalHeaderLabels(["Координаты", "Множество"])
 
         self.tableWidget.setColumnWidth(0, 300)
         self.tableWidget.setColumnWidth(1, 260)
 
-    def addRow(self, xValue, yValue, setNum, row = 0):
 
-        if row == 0:
+    def addRow(self, xValue, yValue, setNum, row = -1):
+
+        if row == -1:
             curRow = self.tableWidget.rowCount()
         else:
             curRow = row
@@ -444,6 +513,8 @@ class MessageBox(QtWidgets.QMessageBox):
         self.setWindowTitle(title)
         self.setText(text)
         self.setIcon(icon)
+        self.setFont(QtGui.QFont("Ubuntu", 15))
+        self.setGeometry(300, 300, 500, 500)
         self.setStandardButtons(QtWidgets.QMessageBox.Ok)
 
     def show(self):
