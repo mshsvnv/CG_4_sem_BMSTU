@@ -306,15 +306,30 @@
    <property name="text">
     <string>О программе</string>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>15</pointsize>
+    </font>
+   </property>
   </action>
   <action name="authorInfo">
    <property name="text">
     <string>Об авторе</string>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>15</pointsize>
+    </font>
+   </property>
   </action>
   <action name="exitAction">
    <property name="text">
     <string>Выход</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>15</pointsize>
+    </font>
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>

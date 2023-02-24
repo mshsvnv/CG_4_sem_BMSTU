@@ -9,9 +9,6 @@ class Canvas(QtWidgets.QWidget):
 
         self.setMouseTracking(True)
 
-        self.clean = False
-        self.lastIndex = 0
-
         self.penFirst = QtGui.QPen(Qt.red, 8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
         self.penSecond = QtGui.QPen(Qt.green, 8, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
 
@@ -19,9 +16,6 @@ class Canvas(QtWidgets.QWidget):
 
         self.addRow = addRow
         self.curCoordLabel = curCoordLabel
-
-        self.resPointsFirst = list()  
-        self.resPointsSecond = list() 
 
         self.pointsAll = pointsAll    # информация о всех точках
         self.actions = actions

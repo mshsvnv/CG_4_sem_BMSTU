@@ -489,7 +489,7 @@ class UI(QtWidgets.QMainWindow):
             "точками внутренних общих касательных и точкой пересечения " + \
             "касательных, максимальна."
         
-        msg = MessageBox("Об программе", 
+        msg = MessageBox("О программе", 
                          text, 
                          QtWidgets.QMessageBox.Information)
         
