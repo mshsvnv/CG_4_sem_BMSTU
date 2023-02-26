@@ -202,8 +202,6 @@ class UI(QtWidgets.QMainWindow):
         self.canvas.update()
 
     def cancelCommand(self):
-
-        print(self.actions)
         
         if len(self.actions) == 0:
             text = "Не выполнено ни одно действие!"
