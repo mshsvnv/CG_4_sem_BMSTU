@@ -24,6 +24,9 @@ class Canvas(QtWidgets.QWidget):
         self.scale = 2 * self.maxValue / min(self.width(), self.height())
 
         self.solution = solution
+        
+        self.x = 0
+        self.y = 0
 
     def toCanvas(self, point: list): # из фактических в канвас
         

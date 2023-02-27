@@ -21,7 +21,7 @@ class UI(QtWidgets.QMainWindow):
         self.canvas = Canvas(self.canvasWidget, self.addRow, 
                              self.curCoordLabel, self.pointsAll, 
                              self.actions, self.solution)
-        self.gridLayout.addWidget(self.canvas, 4, 0, 3, 4)
+        self.gridLayout.addWidget(self.canvas, 6, 0, 4, 4)
 
         self.addButton.clicked.connect(self.addCommand)
         self.delButton.clicked.connect(self.delCommand)
@@ -29,6 +29,8 @@ class UI(QtWidgets.QMainWindow):
         self.changeButton.clicked.connect(self.changeCommand)
         self.solveButton.clicked.connect(self.solveCommand)
         self.restartButton.clicked.connect(self.restartCommand)
+        self.plusButton.clicked.connect(self.scaleCommand)
+        self.minusButton.clicked.connect(self.scaleCommand)
 
         self.exitAction.triggered.connect(self.exitProgram)
         self.progInfo.triggered.connect(self.printProgInfo)
@@ -37,6 +39,17 @@ class UI(QtWidgets.QMainWindow):
         self.styleTable()
 
         self.show()
+
+    def scaleCommand(self):
+
+        name = str(self.sender().objectName())
+        
+        if name == "plusButton":
+            self.canvas.maxValue /= 1.5
+        else:
+            self.canvas.maxValue *= 1.5
+
+        self.canvas.update()
 
     def restartCommand(self):
 
@@ -202,7 +215,9 @@ class UI(QtWidgets.QMainWindow):
 
                         maxValue = [abs(x) for x in maxValue]
 
-                        self.canvas.maxValue = max(max(maxValue), self.canvas.maxValue)
+                        self.canvas.maxValue = max(maxValue)
+
+                        # self.canvas.maxValue = max(max(maxValue), self.canvas.maxValue)
                         
                         text = "Ответ: \nМакисмальная разность площадей: {:.3f}".format(self.maxDeltaSquare)
                         text += "\nТочки первого множества:\n"
