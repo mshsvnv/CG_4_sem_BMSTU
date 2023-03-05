@@ -197,6 +197,12 @@ class UI(QtWidgets.QMainWindow):
 
             return
         
+        if kx == 0.0:
+            kx = 1e-8
+        
+        if ky == 0.0:
+            ky = 1e-8
+        
         self.actions.append([x, y, 1 / kx, 1 / ky, "scale"])
         self.canvas.scalePoints(x, y, kx, ky)
         self.canvas.update()
