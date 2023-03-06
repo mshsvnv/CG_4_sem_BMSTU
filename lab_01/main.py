@@ -82,7 +82,7 @@ class UI(QtWidgets.QMainWindow):
     def solveCommand(self):
 
         if len(self.pointsAll) ==  0:
-            msg = MessageBox("Ошибка",
+            msg  = MessageBox("Ошибка",
                              "Нет доступных точек для построения",
                              QtWidgets.QMessageBox.Information)
 
@@ -136,14 +136,14 @@ class UI(QtWidgets.QMainWindow):
 
                 # print("Не на одной")
 
-            if len(circlesFirst) == 0:
-                msg = MessageBox("Ошибка",
-                                "Из точек первого множества нельзя построить окружности",
-                                QtWidgets.QMessageBox.Information)
+        if len(circlesFirst) == 0:
+            msg = MessageBox("Ошибка",
+                            "Из точек первого множества нельзя построить окружности",
+                            QtWidgets.QMessageBox.Information)
 
-                x = msg.exec_()
+            x = msg.exec_()
 
-                return
+            return
 
         for points in it.combinations(secondPoints, 3):
             value = calcAlg.oneLine(points[0], points[1], points[2])
@@ -161,14 +161,14 @@ class UI(QtWidgets.QMainWindow):
 
                 # print("Не на одной")
 
-            if len(circlesFirst) == 0:
-                msg = MessageBox("Ошибка",
-                                "Из точек второго множества нельзя построить окружности",
-                                QtWidgets.QMessageBox.Information)
+        if len(circlesFirst) == 0:
+            msg = MessageBox("Ошибка",
+                            "Из точек второго множества нельзя построить окружности",
+                            QtWidgets.QMessageBox.Information)
 
-                x = msg.exec_()
+            x = msg.exec_()
 
-                return
+            return
                 
         for i in range(len(circlesFirst)):
             for j in range(len(circlesSecond)):
@@ -245,6 +245,9 @@ class UI(QtWidgets.QMainWindow):
             return
         
         self.canvas.update()
+        
+        self.solution = list()
+        self.maxDeltaSquare = -1
 
     def cancelCommand(self):
     

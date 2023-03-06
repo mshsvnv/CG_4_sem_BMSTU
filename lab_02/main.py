@@ -174,8 +174,18 @@ class UI(QtWidgets.QMainWindow):
         kx = self.kxLineEdit.text()
         ky = self.kyLineEdit.text()
 
-        if len(kx) == 0 or len(ky) == 0:
-            text = "Не введен к-т масштабирования!"
+        if len(kx) == 0:
+            text = "Не введен к-т масштабирования по x!"
+
+            msg = MessageBox("Ошибка",
+                             text, 
+                             QtWidgets.QMessageBox.Warning)
+            msg.show()
+
+            return 
+        
+        if len(ky) == 0:
+            text = "Не введен к-т масштабирования по y!"
 
             msg = MessageBox("Ошибка",
                              text, 
@@ -186,9 +196,20 @@ class UI(QtWidgets.QMainWindow):
         
         try:
             kx = float(kx)
+        except:
+            text = "Неверное значение к-та kx!"
+
+            msg = MessageBox("Ошибка",
+                             text, 
+                             QtWidgets.QMessageBox.Warning)
+            msg.show()
+
+            return
+        
+        try:
             ky = float(ky)
         except:
-            text = "Неверное значение к-та!"
+            text = "Неверное значение к-та ky!"
 
             msg = MessageBox("Ошибка",
                              text, 

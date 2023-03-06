@@ -96,6 +96,8 @@ class Canvas(QtWidgets.QWidget):
 
         if len(self.solution) != 0:
             self.drawSolution()
+
+        self.solution = list()
             
         self.painter.end()
 
